@@ -14,7 +14,5 @@ static = ["hidapi-sys/static"]
 build  = ["static", "hidapi-sys/build"]
 
 [dependencies]
-libc = "0.2"
-
-[dependencies.hidapi-sys]
-path = "../hidapi-sys"
+libc       = "0.2"
+hidapi-sys = "0.1"
