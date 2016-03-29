@@ -83,7 +83,7 @@ impl<'a> Data<'a> {
 		buffer.push(id);
 		buffer.extend(data);
 
-		self.write(&buffer).map(|v| v - 1)
+		self.write(&buffer)
 	}
 
 	pub fn write<T: AsRef<[u8]>>(&mut self, data: T) -> Res<usize> {
@@ -132,7 +132,7 @@ impl<'a> Data<'a> {
 			Some(length) => {
 				data.clone_from_slice(&buffer[1..length]);
 
-				Ok(Some((data[0], length - 1)))
+				Ok(Some((data[0], length)))
 			}
 		}
 	}
@@ -198,14 +198,13 @@ impl<'a> Feature<'a> {
 		let mut buffer = vec![0u8; data.len() + 1];
 
 		buffer[0] = id;
-		self.get_direct(&mut buffer).map(|l| l.map(|v| v - 1))
+		self.get_direct(&mut buffer)
 	}
 
 	pub fn get<T: AsMut<[u8]>>(&mut self, data: T) -> Res<Option<usize>> {
 		self.get_from(0, data)
 	}
 }
-
 
 impl Drop for Handle {
 	fn drop(&mut self) {
