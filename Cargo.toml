@@ -13,9 +13,6 @@ keywords    = ["hid"]
 static = ["hidapi-sys/static"]
 build  = ["static", "hidapi-sys/build"]
 
-raw = ["hidapi-sys/raw"]
-usb = ["hidapi-sys/usb"]
-
 [dependencies]
 libc = "0.2"
 
