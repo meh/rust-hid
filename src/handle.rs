@@ -62,7 +62,7 @@ impl<'a> Data<'a> {
 		Data { handle: handle }
 	}
 
-	pub fn write_direct<T: AsRef<[u8]>>(&mut self, data: T) -> Res<usize> {
+	pub fn write<T: AsRef<[u8]>>(&mut self, data: T) -> Res<usize> {
 		let data = data.as_ref();
 
 		unsafe {
@@ -86,11 +86,7 @@ impl<'a> Data<'a> {
 		self.write(&buffer)
 	}
 
-	pub fn write<T: AsRef<[u8]>>(&mut self, data: T) -> Res<usize> {
-		self.write_to(0, data)
-	}
-
-	pub fn read_direct<T: AsMut<[u8]>>(&mut self, mut data: T, timeout: Duration) -> Res<Option<usize>> {
+	pub fn read<T: AsMut<[u8]>>(&mut self, mut data: T, timeout: Duration) -> Res<Option<usize>> {
 		let data   = data.as_mut();
 		let result = if timeout.as_secs() == 0 && timeout.subsec_nanos() == 0 {
 			unsafe {
@@ -116,10 +112,6 @@ impl<'a> Data<'a> {
 		}
 	}
 
-	pub fn read<T: AsMut<[u8]>>(&mut self, data: T, timeout: Duration) -> Res<Option<usize>> {
-		self.read_from(data, timeout).map(|r| r.map(|(_, l)| l))
-	}
-
 	pub fn read_from<T: AsMut<[u8]>>(&mut self, mut data: T, timeout: Duration) -> Res<Option<(u8, usize)>> {
 		let mut data   = data.as_mut();
 		let mut buffer = Vec::with_capacity(data.len() + 1);
@@ -132,7 +124,7 @@ impl<'a> Data<'a> {
 			Some(length) => {
 				data.clone_from_slice(&buffer[1..length]);
 
-				Ok(Some((data[0], length)))
+				Ok(Some((data[0], length - 1)))
 			}
 		}
 	}
@@ -148,7 +140,7 @@ impl<'a> Feature<'a> {
 		Feature { handle: handle }
 	}
 
-	pub fn send_direct<T: AsRef<[u8]>>(&mut self, data: T) -> Res<usize> {
+	pub fn send<T: AsRef<[u8]>>(&mut self, data: T) -> Res<usize> {
 		let data = data.as_ref();
 
 		unsafe {
@@ -172,11 +164,7 @@ impl<'a> Feature<'a> {
 		self.send(&buffer).map(|v| v - 1)
 	}
 
-	pub fn send<T: AsRef<[u8]>>(&mut self, data: T) -> Res<usize> {
-		self.send_to(0, data)
-	}
-
-	pub fn get_direct<T: AsMut<[u8]>>(&mut self, mut data: T) -> Res<Option<usize>> {
+	pub fn get<T: AsMut<[u8]>>(&mut self, mut data: T) -> Res<Option<usize>> {
 		let data = data.as_mut();
 
 		unsafe {
@@ -198,11 +186,7 @@ impl<'a> Feature<'a> {
 		let mut buffer = vec![0u8; data.len() + 1];
 
 		buffer[0] = id;
-		self.get_direct(&mut buffer)
-	}
-
-	pub fn get<T: AsMut<[u8]>>(&mut self, data: T) -> Res<Option<usize>> {
-		self.get_from(0, data)
+		self.get(&mut buffer)
 	}
 }
 
