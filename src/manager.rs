@@ -6,10 +6,12 @@ use {Error, Devices};
 
 static INITIALIZED: AtomicBool = ATOMIC_BOOL_INIT;
 
+/// The device manager.
 pub struct Manager;
 
 unsafe impl Send for Manager { }
 
+/// Create the manager.
 pub fn init() -> Res<Manager> {
 	if INITIALIZED.load(Ordering::Relaxed) {
 		return Err(Error::Initialized);
@@ -39,12 +41,15 @@ impl Drop for Manager {
 }
 
 impl Manager {
+	/// Find the wanted device, `vendor` or `product` are given it will
+	/// returns only the matches devices.
 	pub fn find(&self, vendor: Option<u16>, product: Option<u16>) -> Devices {
 		unsafe {
 			Devices::new(vendor, product)
 		}
 	}
 
+	/// Return all devices.
 	pub fn devices(&self) -> Devices {
 		self.find(None, None)
 	}

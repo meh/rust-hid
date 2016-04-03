@@ -3,6 +3,7 @@ use std::marker::PhantomData;
 use sys::*;
 use Device;
 
+/// An iterator over the available devices.
 pub struct Devices<'a> {
 	ptr: *mut hid_device_info,
 	cur: *mut hid_device_info,
@@ -11,6 +12,7 @@ pub struct Devices<'a> {
 }
 
 impl<'a> Devices<'a> {
+	#[doc(hidden)]
 	pub unsafe fn new(vendor: Option<u16>, product: Option<u16>) -> Self {
 		let list = hid_enumerate(vendor.unwrap_or(0), product.unwrap_or(0));
 
