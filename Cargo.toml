@@ -14,5 +14,5 @@ static = ["hidapi-sys/static"]
 build  = ["static", "hidapi-sys/build"]
 
 [dependencies]
-libc       = "0.2"
+libc       = "0.2.21"
 hidapi-sys = "0.1"

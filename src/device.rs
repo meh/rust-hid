@@ -3,6 +3,7 @@ use std::path::Path;
 use std::ffi::CStr;
 
 use sys::*;
+use libc;
 use Result as Res;
 use {Error, Handle};
 
@@ -45,9 +46,23 @@ impl<'a> Device<'a> {
 	}
 
 	/// The serial number.
-	pub fn serial_number(&self) -> &str {
+	pub fn serial_number(&self) -> String {
 		unsafe {
-			CStr::from_ptr((*self.ptr).serial_number as *const _).to_str().unwrap()
+			to_string((*self.ptr).serial_number as *const _)
+		}
+	}
+
+	/// The manufacturer string.
+	pub fn manufacturer_string(&self) -> String {
+		unsafe {
+			to_string((*self.ptr).manufacturer_string as *const _)
+		}
+	}
+
+	/// The product string.
+	pub fn product_string(&self) -> String {
+		unsafe {
+			to_string((*self.ptr).product_string as *const _)
 		}
 	}
 
@@ -90,5 +105,19 @@ impl<'a> Device<'a> {
 
 			Ok(Handle::new(handle))
 		}
+	}
+}
+
+#[inline]
+unsafe fn to_string(value: *const libc::wchar_t) -> String {
+	// USB descriptors are limited to 255 bytes.
+	let mut buffer = [0u8; 256];
+	let     length = libc::wcstombs(buffer.as_mut_ptr() as *mut _, value, buffer.len());
+
+	if length > 0 {
+		String::from_utf8_lossy(&buffer[0.. length as usize]).into_owned()
+	}
+	else {
+		String::new()
 	}
 }
