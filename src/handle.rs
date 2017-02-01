@@ -110,8 +110,9 @@ impl<'a> Data<'a> {
 		}
 		else {
 			unsafe {
+				// Timeout is in milliseconds.
 				hid_read_timeout(self.handle.as_mut_ptr(), data.as_mut_ptr(), data.len(),
-					timeout.as_secs() as c_int * 1_000 + timeout.subsec_nanos() as c_int * 1_000)
+					timeout.as_secs() as c_int * 1_000 + timeout.subsec_nanos() as c_int / 1_000_000)
 			}
 		};
 
