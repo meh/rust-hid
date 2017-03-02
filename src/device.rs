@@ -3,6 +3,7 @@ use std::path::Path;
 use std::ffi::CStr;
 
 use sys::*;
+use libc;
 use Result as Res;
 use {Error, Handle};
 
@@ -45,11 +46,26 @@ impl<'a> Device<'a> {
 	}
 
 	/// The serial number.
-	pub fn serial_number(&self) -> &str {
+	pub fn serial_number(&self) -> String {
 		unsafe {
-			CStr::from_ptr((*self.ptr).serial_number as *const _).to_str().unwrap()
+			wstrtostr((*self.ptr).serial_number as *const _)
 		}
 	}
+
+	/// The manufacturer string.
+	pub fn manufacturer_string(&self) -> String {
+		unsafe {
+			wstrtostr((*self.ptr).manufacturer_string as *const _)
+		}
+	}
+
+	/// The product string.
+	pub fn product_string(&self) -> String {
+		unsafe {
+			wstrtostr((*self.ptr).product_string as *const _)
+		}
+	}
+
 
 	/// The release number.
 	pub fn release_number(&self) -> u16 {
@@ -90,5 +106,16 @@ impl<'a> Device<'a> {
 
 			Ok(Handle::new(handle))
 		}
+	}
+}
+
+unsafe fn wstrtostr(wstr: *const libc::wchar_t) -> String {
+	let len = libc::wcstombs(0 as *mut _, wstr, 0);
+	let buffer = vec![0; len + 1];
+	let ret = libc::wcstombs(buffer.as_ptr() as *mut _, wstr, buffer.len());
+	if ret > 0 {
+		String::from_utf8_lossy(&buffer[0..ret as usize]).to_string()
+	} else {
+		panic!("wcstombs error")
 	}
 }
