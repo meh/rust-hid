@@ -3,9 +3,10 @@ use std::path::Path;
 use std::ffi::CStr;
 
 use sys::*;
-use libc;
+use libc::{size_t, wchar_t, wcstombs};
 use Result as Res;
-use {Error, Handle};
+use handle::Handle;
+use error::{self, Error};
 
 /// The HID device.
 pub struct Device<'a> {
@@ -46,23 +47,23 @@ impl<'a> Device<'a> {
 	}
 
 	/// The serial number.
-	pub fn serial_number(&self) -> String {
+	pub fn serial_number(&self) -> Option<String> {
 		unsafe {
-			to_string((*self.ptr).serial_number as *const _)
+			(*self.ptr).serial_number.as_ref().and_then(|p| to_string(p))
 		}
 	}
 
 	/// The manufacturer string.
-	pub fn manufacturer_string(&self) -> String {
+	pub fn manufacturer_string(&self) -> Option<String> {
 		unsafe {
-			to_string((*self.ptr).manufacturer_string as *const _)
+			(*self.ptr).manufacturer_string.as_ref().and_then(|p| to_string(p))
 		}
 	}
 
 	/// The product string.
-	pub fn product_string(&self) -> String {
+	pub fn product_string(&self) -> Option<String> {
 		unsafe {
-			to_string((*self.ptr).product_string as *const _)
+			(*self.ptr).product_string.as_ref().and_then(|p| to_string(p))
 		}
 	}
 
@@ -109,15 +110,14 @@ impl<'a> Device<'a> {
 }
 
 #[inline]
-unsafe fn to_string(value: *const libc::wchar_t) -> String {
+unsafe fn to_string(value: *const wchar_t) -> Option<String> {
 	// USB descriptors are limited to 255 bytes.
 	let mut buffer = [0u8; 256];
-	let     length = libc::wcstombs(buffer.as_mut_ptr() as *mut _, value, buffer.len());
+	let     length = wcstombs(buffer.as_mut_ptr() as *mut _, value, buffer.len());
 
-	if length > 0 {
-		String::from_utf8_lossy(&buffer[0.. length as usize]).into_owned()
+	if length == size_t::max_value() {
+		return None;
 	}
-	else {
-		String::new()
-	}
+
+	Some(String::from_utf8_lossy(&buffer[0.. length as usize]).into_owned())
 }
