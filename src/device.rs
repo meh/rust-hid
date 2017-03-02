@@ -4,7 +4,6 @@ use std::ffi::CStr;
 
 use sys::*;
 use libc::{size_t, wchar_t, wcstombs};
-use Result as Res;
 use handle::Handle;
 use error::{self, Error};
 
@@ -96,7 +95,7 @@ impl<'a> Device<'a> {
 	}
 
 	/// Opens the device to use it.
-	pub fn open(&self) -> Res<Handle> {
+	pub fn open(&self) -> error::Result<Handle> {
 		unsafe {
 			let handle = hid_open((*self.ptr).vendor_id, (*self.ptr).product_id, (*self.ptr).serial_number);
 

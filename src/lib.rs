@@ -2,9 +2,7 @@ extern crate hidapi_sys as sys;
 extern crate libc;
 
 mod error;
-pub use error::Error;
-
-pub type Result<T> = ::std::result::Result<T, Error>;
+pub use error::{Error, Result};
 
 mod manager;
 pub use manager::{Manager, init};

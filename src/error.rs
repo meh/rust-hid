@@ -13,6 +13,8 @@ pub enum Error {
 	String(String),
 }
 
+pub type Result<T> = ::std::result::Result<T, Error>;
+
 impl From<c_int> for Error {
 	fn from(value: c_int) -> Error {
 		match value {

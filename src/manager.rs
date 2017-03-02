@@ -1,8 +1,8 @@
 use std::sync::atomic::{AtomicBool, ATOMIC_BOOL_INIT, Ordering};
 
 use sys::*;
-use Result as Res;
-use {Error, Devices};
+use error::{self, Error};
+use devices::Devices;
 
 static INITIALIZED: AtomicBool = ATOMIC_BOOL_INIT;
 
@@ -12,7 +12,7 @@ pub struct Manager;
 unsafe impl Send for Manager { }
 
 /// Create the manager.
-pub fn init() -> Res<Manager> {
+pub fn init() -> error::Result<Manager> {
 	if INITIALIZED.load(Ordering::Relaxed) {
 		return Err(Error::Initialized);
 	}
