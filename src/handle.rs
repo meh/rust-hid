@@ -190,7 +190,7 @@ impl<'a> Feature<'a> {
 	/// Get a feature request.
 	///
 	/// The first byte must be the report ID.
-	pub fn get<T: AsMut<[u8]>>(&mut self, mut data: T) -> error::Result<Option<usize>> {
+	pub fn get<T: AsMut<[u8]>>(&mut self, mut data: T) -> error::Result<usize> {
 		let data = data.as_mut();
 
 		unsafe {
@@ -198,33 +198,23 @@ impl<'a> Feature<'a> {
 				-1 =>
 					Err(Error::Read),
 
-				0 =>
-					Ok(None),
-
-				v =>
-					Ok(Some(v as usize))
+				length =>
+					Ok(length as usize)
 			}
 		}
 	}
 
 	/// Get a feature request from the given report ID.
-	pub fn get_from<T: AsMut<[u8]>>(&mut self, id: u8, mut data: T) -> error::Result<Option<usize>> {
+	pub fn get_from<T: AsMut<[u8]>>(&mut self, id: u8, mut data: T) -> error::Result<usize> {
 		let     data   = data.as_mut();
 		let mut buffer = vec![0u8; data.len() + 1];
 
 		buffer[0] = id;
 		
-		match try!(self.get(&mut buffer)) {
-			None => {
-				Ok(None)
-			}
+		let length = try!(self.get(&mut buffer));
+		data[0..length - 1].clone_from_slice(&buffer[1..length]);
 
-			Some(length) => {
-				data[0..length - 1].clone_from_slice(&buffer[1..length]);
-
-				Ok(Some(length - 1))
-			}
-		}
+		Ok(length - 1)
 	}
 }
 
