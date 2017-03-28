@@ -208,12 +208,22 @@ impl<'a> Feature<'a> {
 	}
 
 	/// Get a feature request from the given report ID.
-	pub fn get_from<T: AsMut<[u8]>>(&mut self, id: u8, mut data: T) -> error::Result<Option<usize>> {
+	pub fn get_from<T: AsMut<[u8]>>(&mut self, id: u8, mut data: T) -> error::Result<Option<(u8, usize)>> {
 		let     data   = data.as_mut();
 		let mut buffer = vec![0u8; data.len() + 1];
 
 		buffer[0] = id;
-		self.get(&mut buffer)
+		match try!(self.get(&mut buffer)) {
+			None => {
+				Ok(None)
+			}
+
+			Some(length) => {
+				data[0..length - 1].clone_from_slice(&buffer[1..length]);
+
+				Ok(Some((buffer[0], length - 1)))
+			}
+		}
 	}
 }
 
