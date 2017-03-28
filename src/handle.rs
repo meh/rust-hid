@@ -142,7 +142,7 @@ impl<'a> Data<'a> {
 			Some(length) => {
 				data[0..length - 1].clone_from_slice(&buffer[1..length]);
 
-				Ok(Some((data[0], length - 1)))
+				Ok(Some((buffer[0], length - 1)))
 			}
 		}
 	}
