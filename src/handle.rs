@@ -213,7 +213,18 @@ impl<'a> Feature<'a> {
 		let mut buffer = vec![0u8; data.len() + 1];
 
 		buffer[0] = id;
-		self.get(&mut buffer)
+		
+		match try!(self.get(&mut buffer)) {
+			None => {
+				Ok(None)
+			}
+
+			Some(length) => {
+				data[0..length - 1].clone_from_slice(&buffer[1..length]);
+
+				Ok(Some(length - 1))
+			}
+		}
 	}
 }
 
