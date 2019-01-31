@@ -31,3 +31,13 @@ impl Iterator for Devices {
         }
     }
 }
+
+impl Drop for Devices {
+	fn drop(&mut self) {
+		if !self.cur.is_null() {
+			unsafe {
+				hid_free_enumeration(self.cur);
+			}
+		}
+	}
+}
