@@ -13,8 +13,8 @@ pub struct Device {
 
 impl Device {
     #[doc(hidden)]
-    pub unsafe fn new<'b>(ptr: *const hid_device_info) -> Device {
-        Device { ptr: ptr }
+    pub unsafe fn new(ptr: *const hid_device_info) -> Device {
+        Device { ptr }
     }
 
     /// The path representation.
@@ -129,3 +129,6 @@ impl Drop for Device {
 
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 unsafe impl core::marker::Send for Device {}
+
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+unsafe impl core::marker::Sync for Device {}
