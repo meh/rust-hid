@@ -5,7 +5,7 @@ mod error;
 pub use error::{Error, Result};
 
 mod manager;
-pub use manager::{Manager, init};
+pub use manager::{init, Manager};
 
 mod devices;
 pub use devices::Devices;
