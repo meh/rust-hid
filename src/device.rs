@@ -1,5 +1,4 @@
 use std::ffi::CStr;
-use std::marker::PhantomData;
 use std::path::Path;
 
 use error::{self, Error};
@@ -8,20 +7,14 @@ use libc::{size_t, wchar_t, wcstombs};
 use sys::*;
 
 /// The HID device.
-pub struct Device<'a> {
+pub struct Device {
     ptr: *const hid_device_info,
-
-    _marker: PhantomData<&'a ()>,
 }
 
-impl<'a> Device<'a> {
+impl Device {
     #[doc(hidden)]
-    pub unsafe fn new<'b>(ptr: *const hid_device_info) -> Device<'b> {
-        Device {
-            ptr: ptr,
-
-            _marker: PhantomData,
-        }
+    pub unsafe fn new(ptr: *const hid_device_info) -> Device {
+        Device { ptr }
     }
 
     /// The path representation.
@@ -119,3 +112,23 @@ unsafe fn to_string(value: *const wchar_t) -> Option<String> {
 
     Some(String::from_utf8_lossy(&buffer[0..length as usize]).into_owned())
 }
+
+impl Drop for Device {
+    fn drop(&mut self) {
+        unsafe {
+            if !self.ptr.is_null() {
+                libc::free((*self.ptr).path as *mut libc::c_void);
+                libc::free((*self.ptr).serial_number as *mut libc::c_void);
+                libc::free((*self.ptr).manufacturer_string as *mut libc::c_void);
+                libc::free((*self.ptr).product_string as *mut libc::c_void);
+                libc::free(self.ptr as *mut libc::c_void);
+            }
+        }
+    }
+}
+
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+unsafe impl core::marker::Send for Device {}
+
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+unsafe impl core::marker::Sync for Device {}
